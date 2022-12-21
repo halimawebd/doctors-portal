@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { AuthContext } from '../../../Contexts/AuthProvider';
 
 const Navber = () => {
-
+    const {user} = useState(AuthContext);
     const menuItems = <React.Fragment>
         <li><Link to="/">Home</Link></li>
         <li><Link to="/appoinment">Appointment</Link></li>
         <li><Link to="/about">About</Link></li>
-        <li><Link to="/login">Login</Link></li>
+        {user?.uid ? 
+        <li><Link to="/login">Login</Link></li>:
+        <li><Link to="/login">Sign Out</Link></li>}
         <li><Link to="/review">Review</Link></li>
-        {/* <li><Link to="/Contracts">Contracts</Link></li> */}
+
     </React.Fragment>
     return (
         <div className="navbar bg-base-100 flex justify-between">
