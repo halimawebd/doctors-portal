@@ -1,22 +1,63 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+import { Link, useNavigate } from 'react-router-dom';
 import{AuthContext} from '../../Contexts/AuthProvider';
+import useToken from '../../hooks/useToken';
 
 const SignUp = () => {
 
     const {register, handleSubmit, formState: {errors}} = useForm();
-    const {createUser} = useContext(AuthContext);
+    const {createUser, updateUser} = useContext(AuthContext);
+    const [signUpError, setSignUpError] = useState('');
+    const [createUserEmail, setCreatedUserEmail] = useState('')
+    const [token] = useToken(createUserEmail);
+    const navigate = useNavigate();
+
+    if(token){
+      navigate('/');
+    }
+
     const handleSignUp = (data) =>{
-      
-        console.log(data);
+        setSignUpError('');
        createUser(data.email, data.password)
        .then(result =>{
         const user = result.user;
         console.log(user);
+        toast('User Create Successfully.')
+        const userInfo = {
+          displayName: data.name
+        }
+        updateUser(userInfo)
+        .then(() =>{
+          saveUser(data.name, data.email);
+        })
+        .catch(error => console.log(error));
        })
-       .catch(error =>console.log(error));
+       
+       .catch(error =>{
+        console.log(error)
+        setSignUpError(error.message)
+       });
     }
+
+    const saveUser = (name, email) =>{
+      const user ={name, email};
+      fetch('http://localhost:5000/users', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body:JSON.stringify(user)
+      })
+      .then(res => res.json())
+      .then(data =>{
+        setCreatedUserEmail(email);
+       
+      })
+    }
+
+
     return (
         <div  className='h-[800px] flex justify-center items-center'>
         
@@ -47,6 +88,7 @@ const SignUp = () => {
     {errors.password && <p className='text-red-500'>{errors.password.message}</p>}
    </div>
   <input className='btn btn-addent w-full mt-full' value="SignUp" type="submit" />
+  {signUpError && <p className='text-red-600'>{signUpError}</p>}
   </form>
   <p>Already have an account <Link className='text-secondary' to="/login">Please Login</Link></p>
   <div className="divider">OR</div>
